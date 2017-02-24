@@ -51,7 +51,7 @@ const styleSheet = createStyleSheet('numericPad', (theme) => ({
         backgroundColor: theme.modalContentBackground,
         width: '80%',
         padding: 20,
-        border: '1px solid '+theme.modalContentBorder,
+        border: '1px solid ' + theme.modalContentBorder,
     },
     pad: {
         margin: 'auto',
@@ -62,14 +62,14 @@ const styleSheet = createStyleSheet('numericPad', (theme) => ({
         flexWrap: 'wrap',
         minWidth: 200,
         maxWidth: 500,
-        border: '1px solid '+theme.padBorder,
+        border: '1px solid ' + theme.padBorder,
         borderRadius: '5px',
     },
     number: {
         width: '100%',
         fontSize: '2.1em',
         color: theme.numberColor,
-        border: '1px solid '+ theme.numberBorder,
+        border: '1px solid ' + theme.numberBorder,
         margin: 5,
     },
     padNumber: {
@@ -77,16 +77,16 @@ const styleSheet = createStyleSheet('numericPad', (theme) => ({
         outline: 'none',
         margin: '5px',
         fontSize: '2em',
-        border: '1px solid '+theme.padNumberBorder,
+        border: '1px solid ' + theme.padNumberBorder,
         borderRadius: '10px',
         textAlign: 'center',
         width: 'calc(90% / 3)',
         cursor: 'pointer',
         userSelect: 'none',
-        boxShadow: '0 5px '+theme.padNumberPassiveShadow,
+        boxShadow: '0 5px ' + theme.padNumberPassiveShadow,
         '&:active': {
             transform: 'translateY(4px)',
-            boxShadow: '0 2px '+theme.padNumberActiveShadow,
+            boxShadow: '0 2px ' + theme.padNumberActiveShadow,
 
         }
     }
@@ -94,38 +94,43 @@ const styleSheet = createStyleSheet('numericPad', (theme) => ({
 
 const classes = styleManager.render(styleSheet);
 
-let numPad = null;
 
-const numericType = [1,2,3,4,5,6,7,8,9,'C',0,'.'];
+const numericType = [1, 2, 3, 4, 5, 6, 7, 8, 9, 'C', 0, '.'];
+
+const checkToClose = (onClose) => (event) => {
+    console.log(event.target, numPad);
+    if (event.target === numPad) {
+        if (onClose) onClose();
+    }
+}
+
+const keyDownCheck = (onButtonClick, array) => (event) => {
+    if ((!isNaN(event.key) && array.indexOf(Number(event.key)) > -1) || event.key === "Backspace" || event.key === '.') {
+        onButtonClick(event.key)();
+        event.preventDefault();
+    }
+}
 
 const NumericPad = (props, context) => {
+    var numPad = null;
     let array = numericType;
     let maxNumber = 20;
-    if(props.maxNumber){
+    if (props.maxNumber) {
         maxNumber = props.maxNumber;
     }
-    if(props.type && props.type !== 'numeric'){
+    if (props.type && props.type !== 'numeric') {
         //I will add here more type
     }
-    if (props.isOpen) {
-        window.onclick = (event) => {
-            if (event.target === numPad) {
-                if (props.onClose) props.onClose();
-            }
-        }
-    } else {
-        window.onclick = null;
-    }
     const onButtonClick = (value) => () => {
-        if (value === "C") {
+        if (value === "Backspace") {
             if (props.number && props.number !== '0' && Number(props.number) > 9) {
                 props.onChange(props.number.substr(0, props.number.length - 1));
             } else {
                 props.onChange('0');
             }
             return;
-        } 
-        if(props.number.length >= maxNumber)return;
+        }
+        if (props.number.length >= maxNumber) return;
         if (value === '.') {
             if (props.number.indexOf('.') === -1) {
                 props.onChange(props.number + (value + ''))
@@ -139,12 +144,19 @@ const NumericPad = (props, context) => {
             }
         }
     }
+    if (props.isOpen) {
+        window.addEventListener('click', checkToClose(props.onClose));
+        window.addEventListener('keydown', keyDownCheck(onButtonClick, array));
+    } else {
+        window.removeEventListener('click', checkToClose(props.onClose));
+        window.removeEventListener('keydown', keyDownCheck(onButtonClick, array));
+    }
     return <div className={classNames(classes.root, { [classes.isOpen]: props.isOpen })} ref={(pad) => { numPad = pad }}>
         <div className={classes.content}>
             <div className={classes.pad}>
                 <div className={classes.number}>{props.number}</div>
                 {array.map((item) => {
-                    return <button key={"ciao"+item} className={classes.padNumber} onClick={onButtonClick(item)}>{item}</button>
+                    return <button key={"ciao" + item} className={classes.padNumber} onClick={onButtonClick(item === 'C' ? 'Backspace' : item)}>{item}</button>
                 })}
             </div>
         </div>
