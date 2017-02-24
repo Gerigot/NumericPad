@@ -8,6 +8,18 @@ const themeObj = {
     fontFamily: 'Roboto',
     fontSize: 12,
     color: 'red',
+    modalBackground: 'rgba(0,0,0,0.4)',
+    modalContentBackground: '#fefefe',
+    modalContentBorder: '#cacaca',
+    padBackground: 'linear-gradient(45deg, rgb(0, 90, 156), rgba(0,90,156,0.5), rgb(0, 90, 156))',
+    padBorder: 'rgba(0,0,0,0.6)',
+    numberColor: 'rgba(0,0,0,1)',
+    numberBorder: 'rgba(0,0,0,0.5)',
+    padNumberBorder: 'rgba(0,0,0,0.6)',
+    padNumberBackground: 'rgb(141, 207, 255)',
+    padNumberPassiveShadow: '#444',
+    padNumberActiveShadow: 'rgba(10,10,10,0.3)',
+
 };
 
 const styleManager = createStyleManager({
@@ -25,7 +37,7 @@ const styleSheet = createStyleSheet('numericPad', (theme) => ({
         height: '100%',
         position: 'fixed',
         boxSizing: 'border-box',
-        backgroundColor: 'rgba(0,0,0,0.4)',
+        backgroundColor: theme.modalBackground,
         top: 0,
         left: 0,
         display: 'none',
@@ -36,39 +48,47 @@ const styleSheet = createStyleSheet('numericPad', (theme) => ({
     },
     content: {
         margin: '15% auto',
-        backgroundColor: '#fefefe',
+        backgroundColor: theme.modalContentBackground,
         width: '80%',
         padding: 20,
-        border: '1px solid #cacaca',
-        borderRadius: '50px',
+        border: '1px solid '+theme.modalContentBorder,
     },
     pad: {
         margin: 'auto',
-        background: 'linear-gradient(45deg, rgb(250,250,250), rgb(205,205,205), rgb(250,250,250))',
+        padding: 5,
+        background: theme.padBackground,
         display: 'flex',
         justifyContent: 'space-around',
         flexWrap: 'wrap',
         minWidth: 200,
         maxWidth: 500,
-        border: '1px solid rgba(0,0,0,0.6)',
-        borderRadius: 5,
+        border: '1px solid '+theme.padBorder,
+        borderRadius: '5px',
     },
     number: {
         width: '100%',
         fontSize: '2.1em',
-        color: 'rgba(0,0,0,0.3)',
-        border: '1px solid rgba(0,0,0,0.5)',
+        color: theme.numberColor,
+        border: '1px solid '+ theme.numberBorder,
         margin: 5,
     },
     padNumber: {
+        backgroundColor: theme.padNumberBackground,
+        outline: 'none',
         margin: '5px',
         fontSize: '2em',
-        border: '1px solid rgba(0,0,0,0.4)',
-        borderRadius: 25,
+        border: '1px solid '+theme.padNumberBorder,
+        borderRadius: '10px',
         textAlign: 'center',
         width: 'calc(90% / 3)',
         cursor: 'pointer',
         userSelect: 'none',
+        boxShadow: '0 5px '+theme.padNumberPassiveShadow,
+        '&:active': {
+            transform: 'translateY(4px)',
+            boxShadow: '0 2px '+theme.padNumberActiveShadow,
+
+        }
     }
 }));
 
@@ -76,7 +96,17 @@ const classes = styleManager.render(styleSheet);
 
 let numPad = null;
 
+const numericType = [1,2,3,4,5,6,7,8,9,'C',0,'.'];
+
 const NumericPad = (props, context) => {
+    let array = numericType;
+    let maxNumber = 20;
+    if(props.maxNumber){
+        maxNumber = props.maxNumber;
+    }
+    if(props.type && props.type !== 'numeric'){
+        //I will add here more type
+    }
     if (props.isOpen) {
         window.onclick = (event) => {
             if (event.target === numPad) {
@@ -87,16 +117,20 @@ const NumericPad = (props, context) => {
         window.onclick = null;
     }
     const onButtonClick = (value) => () => {
-        if (value === "c") {
+        if (value === "C") {
             if (props.number && props.number !== '0' && Number(props.number) > 9) {
                 props.onChange(props.number.substr(0, props.number.length - 1));
             } else {
                 props.onChange('0');
             }
-        } else if (value === '.') {
+            return;
+        } 
+        if(props.number.length >= maxNumber)return;
+        if (value === '.') {
             if (props.number.indexOf('.') === -1) {
                 props.onChange(props.number + (value + ''))
             }
+            return;
         } else {
             if (props.number !== '0') {
                 props.onChange(props.number + (value + ''));
@@ -109,18 +143,9 @@ const NumericPad = (props, context) => {
         <div className={classes.content}>
             <div className={classes.pad}>
                 <div className={classes.number}>{props.number}</div>
-                <div className={classes.padNumber} onClick={onButtonClick(1)}>1</div>
-                <div className={classes.padNumber} onClick={onButtonClick(2)}>2</div>
-                <div className={classes.padNumber} onClick={onButtonClick(3)}>3</div>
-                <div className={classes.padNumber} onClick={onButtonClick(4)}>4</div>
-                <div className={classes.padNumber} onClick={onButtonClick(5)}>5</div>
-                <div className={classes.padNumber} onClick={onButtonClick(6)}>6</div>
-                <div className={classes.padNumber} onClick={onButtonClick(7)}>7</div>
-                <div className={classes.padNumber} onClick={onButtonClick(8)}>8</div>
-                <div className={classes.padNumber} onClick={onButtonClick(9)}>9</div>
-                <div className={classes.padNumber} onClick={onButtonClick('c')}>C</div>
-                <div className={classes.padNumber} onClick={onButtonClick(0)}>0</div>
-                <div className={classes.padNumber} onClick={onButtonClick('.')}>.</div>
+                {array.map((item) => {
+                    return <button key={"ciao"+item} className={classes.padNumber} onClick={onButtonClick(item)}>{item}</button>
+                })}
             </div>
         </div>
     </div>
