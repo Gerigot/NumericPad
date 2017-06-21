@@ -1,0 +1,1 @@
+export NumericPad from './component/NumericPad';

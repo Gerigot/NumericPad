@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Component } from 'react';
 import { create as createJss } from 'jss';
 import preset from 'jss-preset-default';
 import classNames from 'classnames';
@@ -97,70 +97,72 @@ const classes = styleManager.render(styleSheet);
 
 const numericType = [1, 2, 3, 4, 5, 6, 7, 8, 9, 'C', 0, '.'];
 
-const checkToClose = (onClose) => (event) => {
-    console.log(event.target, numPad);
-    if (event.target === numPad) {
-        if (onClose) onClose();
-    }
-}
 
-const keyDownCheck = (onButtonClick, array) => (event) => {
-    if ((!isNaN(event.key) && array.indexOf(Number(event.key)) > -1) || event.key === "Backspace" || event.key === '.') {
-        onButtonClick(event.key)();
-        event.preventDefault();
+class NumericPad extends Component {
+    constructor(props) {
+        super(props)
+        this.checkToClose = this.checkToClose.bind(this);
+        this.componentElement = null;
     }
-}
 
-const NumericPad = (props, context) => {
-    var numPad = null;
-    let array = numericType;
-    let maxNumber = 20;
-    if (props.maxNumber) {
-        maxNumber = props.maxNumber;
-    }
-    if (props.type && props.type !== 'numeric') {
-        //I will add here more type
-    }
-    const onButtonClick = (value) => () => {
-        if (value === "Backspace") {
-            if (props.number && props.number !== '0' && Number(props.number) > 9) {
-                props.onChange(props.number.substr(0, props.number.length - 1));
-            } else {
-                props.onChange('0');
-            }
-            return;
-        }
-        if (props.number.length >= maxNumber) return;
-        if (value === '.') {
-            if (props.number.indexOf('.') === -1) {
-                props.onChange(props.number + (value + ''))
-            }
-            return;
-        } else {
-            if (props.number !== '0') {
-                props.onChange(props.number + (value + ''));
-            } else {
-                props.onChange(value);
+    checkToClose(event) {
+        if (this.props.isOpen) {
+            if (!this.componentElement.contains(event.target)) {
+                console.log("chiudo");
+                this.props.onClose();
             }
         }
     }
-    if (props.isOpen) {
-        window.addEventListener('click', checkToClose(props.onClose));
-        window.addEventListener('keydown', keyDownCheck(onButtonClick, array));
-    } else {
-        window.removeEventListener('click', checkToClose(props.onClose));
-        window.removeEventListener('keydown', keyDownCheck(onButtonClick, array));
+
+    componentDidMount() {
+        window.addEventListener('click', this.checkToClose);
     }
-    return <div className={classNames(classes.root, { [classes.isOpen]: props.isOpen })} ref={(pad) => { numPad = pad }}>
-        <div className={classes.content}>
-            <div className={classes.pad}>
-                <div className={classes.number}>{props.number}</div>
-                {array.map((item) => {
-                    return <button key={"ciao" + item} className={classes.padNumber} onClick={onButtonClick(item === 'C' ? 'Backspace' : item)}>{item}</button>
-                })}
+
+    render() {
+        const props = this.props;
+        console.log(this.props);
+        let array = numericType;
+        let maxNumber = 20;
+        if (props.maxNumber) {
+            maxNumber = props.maxNumber;
+        }
+        if (props.type && props.type !== 'numeric') {
+            //I will add here more type
+        }
+        const onButtonClick = (value) => () => {
+            if (value === "Backspace") {
+                if (props.number && props.number !== '0' && Number(props.number) > 9) {
+                    props.onChange(props.number.substr(0, props.number.length - 1));
+                } else {
+                    props.onChange('0');
+                }
+                return;
+            }
+            if (props.number.length >= maxNumber) return;
+            if (value === '.') {
+                if (props.number.indexOf('.') === -1) {
+                    props.onChange(props.number + (value + ''))
+                }
+                return;
+            } else {
+                if (props.number !== '0') {
+                    props.onChange(props.number + (value + ''));
+                } else {
+                    props.onChange(value);
+                }
+            }
+        }
+        return <div className={classNames(classes.root, { [classes.isOpen]: props.isOpen })}>
+            <div className={classes.content} ref={(ele) => { this.componentElement = ele }}>
+                <div className={classes.pad}>
+                    <div className={classes.number}>{props.number}</div>
+                    {array.map((item) => {
+                        return <button key={"ciao" + item} className={classes.padNumber} onClick={onButtonClick(item === 'C' ? 'Backspace' : item)}>{item}</button>
+                    })}
+                </div>
             </div>
         </div>
-    </div>
+    }
 }
 
 export default NumericPad;

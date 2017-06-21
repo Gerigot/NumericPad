@@ -1,6 +1,4 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
 import NumericPad from './component/NumericPad';
 
 class App extends Component {
@@ -34,16 +32,12 @@ class App extends Component {
     }
     return (
       <div className="App">
-        <div className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h2>Welcome to React</h2>
-        </div>
         <p className="App-intro">
           test it clicking on this: <span onClick={openClick}>{this.state.number}</span> you'll receive a string and this is the Number converted {Number(this.state.number)}
         </p>
-        <input type="text" onFocus={openClick} defaultValue={this.state.number}/>
+        <input type="text" onFocus={openClick} readOnly value={this.state.number}/>
         <NumericPad isOpen={this.state.isOpen} number={this.state.number} onChange={onNumberChange} onClose={close}/>
-        <input type="text" onFocus={openClick2} defaultValue={this.state.number2}/>
+        <input type="text" onFocus={openClick2} readOnly value={this.state.number2}/>
         <NumericPad isOpen={this.state.isOpen2} number={this.state.number2} onChange={onNumber2Change} onClose={close2}/>
       </div>
     );
