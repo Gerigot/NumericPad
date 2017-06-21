@@ -124,9 +124,13 @@ class NumericPad extends Component {
     }
 
     keyDownCheck(event) {
-        if ((!isNaN(event.key) && numericType.indexOf(Number(event.key)) > -1) || event.key === "Backspace" || event.key === '.') {
-            this.onButtonClick(event.key)();
-            event.preventDefault();
+        if (this.props.isOpen) {
+            if ((!isNaN(event.key) && numericType.indexOf(Number(event.key)) > -1) || event.key === "Backspace" || event.key === '.') {
+                this.onButtonClick(event.key)();
+                event.preventDefault();
+            }else if(event.key === "Tab" || event.key === "Escape"){
+                this.props.onClose();
+            }
         }
     }
 
