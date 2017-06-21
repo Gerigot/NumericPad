@@ -1,5 +1,5 @@
 {
-  "name": "createComponent",
+  "name": "numeric_pad",
   "version": "0.1.0",
   "private": true,
   "main": "./main.js",
