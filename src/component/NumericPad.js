@@ -87,22 +87,22 @@ const styleSheet = createStyleSheet('numericPad', (theme) => ({
         '&:active': {
             transform: 'translateY(4px)',
             boxShadow: '0 2px ' + theme.padNumberActiveShadow,
-
         }
+    },
+    keypressed: {
+        transform: 'translateY(4px)',
+        boxShadow: '0 2px ' + theme.padNumberActiveShadow,
     }
 }));
-
 const classes = styleManager.render(styleSheet);
-
-
 const numericType = [1, 2, 3, 4, 5, 6, 7, 8, 9, 'C', 0, '.'];
-
-
 class NumericPad extends Component {
     constructor(props) {
         super(props)
+        this.state = { keyPressed: undefined }
         this.checkToClose = this.checkToClose.bind(this);
         this.keyDownCheck = this.keyDownCheck.bind(this);
+        this.keyUp = this.keyUp.bind(this);
         this.onButtonClick = this.onButtonClick.bind(this);
         this.componentElement = null;
         this.maxNumber = 20;
@@ -113,11 +113,18 @@ class NumericPad extends Component {
     componentDidMount() {
         window.addEventListener('click', this.checkToClose);
         window.addEventListener('keydown', this.keyDownCheck);
+        window.addEventListener('keyup', this.keyUp);
     }
+
+    componentWillUnmount(){
+        window.removeEventListener('click', this.checkToClose);
+        window.removeEventListener('keydown', this.keyDownCheck);
+        window.removeEventListener('keyup', this.keyUp);
+    }
+
     checkToClose(event) {
         if (this.props.isOpen) {
             if (!this.componentElement.contains(event.target)) {
-                console.log("chiudo");
                 this.props.onClose();
             }
         }
@@ -127,11 +134,16 @@ class NumericPad extends Component {
         if (this.props.isOpen) {
             if ((!isNaN(event.key) && numericType.indexOf(Number(event.key)) > -1) || event.key === "Backspace" || event.key === '.') {
                 this.onButtonClick(event.key)();
+                this.setState({ keyPressed: event.key })
                 event.preventDefault();
-            }else if(event.key === "Tab" || event.key === "Escape"){
+            } else if (event.key === "Tab" || event.key === "Escape") {
                 this.props.onClose();
             }
         }
+    }
+
+    keyUp(event) {
+        if (this.props.isOpen) this.setState({ keyPressed: undefined });
     }
 
 
@@ -162,6 +174,15 @@ class NumericPad extends Component {
         }
     }
 
+    isKeyPressed(keyPressed, item) {
+        if (keyPressed === "Backspace") {
+            return item === "C"
+        }
+        const toreturn = item.toString() === keyPressed;
+        console.log(toreturn, keyPressed, item.toString());
+        return toreturn
+    }
+
     render() {
         const props = this.props;
         console.log(this.props);
@@ -174,7 +195,7 @@ class NumericPad extends Component {
                 <div className={classes.pad}>
                     <div className={classes.number}>{props.number}</div>
                     {array.map((item) => {
-                        return <button key={"ciao" + item} className={classes.padNumber} onClick={this.onButtonClick(item === 'C' ? 'Backspace' : item)}>{item}</button>
+                        return <button key={"ciao" + item} className={classNames(classes.padNumber, { [classes.keypressed]: this.isKeyPressed(this.state.keyPressed, item) })} onClick={this.onButtonClick(item === 'C' ? 'Backspace' : item)}>{item}</button>
                     })}
                 </div>
             </div>
