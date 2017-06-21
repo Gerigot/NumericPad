@@ -102,9 +102,18 @@ class NumericPad extends Component {
     constructor(props) {
         super(props)
         this.checkToClose = this.checkToClose.bind(this);
+        this.keyDownCheck = this.keyDownCheck.bind(this);
+        this.onButtonClick = this.onButtonClick.bind(this);
         this.componentElement = null;
+        this.maxNumber = 20;
+        if (props.maxNumber) {
+            this.maxNumber = props.maxNumber;
+        }
     }
-
+    componentDidMount() {
+        window.addEventListener('click', this.checkToClose);
+        window.addEventListener('keydown', this.keyDownCheck);
+    }
     checkToClose(event) {
         if (this.props.isOpen) {
             if (!this.componentElement.contains(event.target)) {
@@ -114,22 +123,17 @@ class NumericPad extends Component {
         }
     }
 
-    componentDidMount() {
-        window.addEventListener('click', this.checkToClose);
+    keyDownCheck(event) {
+        if ((!isNaN(event.key) && numericType.indexOf(Number(event.key)) > -1) || event.key === "Backspace" || event.key === '.') {
+            this.onButtonClick(event.key)();
+            event.preventDefault();
+        }
     }
 
-    render() {
-        const props = this.props;
-        console.log(this.props);
-        let array = numericType;
-        let maxNumber = 20;
-        if (props.maxNumber) {
-            maxNumber = props.maxNumber;
-        }
-        if (props.type && props.type !== 'numeric') {
-            //I will add here more type
-        }
-        const onButtonClick = (value) => () => {
+
+    onButtonClick(value) {
+        return () => {
+            const props = this.props;
             if (value === "Backspace") {
                 if (props.number && props.number !== '0' && Number(props.number) > 9) {
                     props.onChange(props.number.substr(0, props.number.length - 1));
@@ -138,7 +142,7 @@ class NumericPad extends Component {
                 }
                 return;
             }
-            if (props.number.length >= maxNumber) return;
+            if (props.number.length >= this.maxNumber) return;
             if (value === '.') {
                 if (props.number.indexOf('.') === -1) {
                     props.onChange(props.number + (value + ''))
@@ -152,12 +156,21 @@ class NumericPad extends Component {
                 }
             }
         }
+    }
+
+    render() {
+        const props = this.props;
+        console.log(this.props);
+        let array = numericType;
+        if (props.type && props.type !== 'numeric') {
+            //I will add here more type
+        }
         return <div className={classNames(classes.root, { [classes.isOpen]: props.isOpen })}>
             <div className={classes.content} ref={(ele) => { this.componentElement = ele }}>
                 <div className={classes.pad}>
                     <div className={classes.number}>{props.number}</div>
                     {array.map((item) => {
-                        return <button key={"ciao" + item} className={classes.padNumber} onClick={onButtonClick(item === 'C' ? 'Backspace' : item)}>{item}</button>
+                        return <button key={"ciao" + item} className={classes.padNumber} onClick={this.onButtonClick(item === 'C' ? 'Backspace' : item)}>{item}</button>
                     })}
                 </div>
             </div>
